@@ -1,0 +1,120 @@
+{
+  "id": "toy-vault",
+  "name": "Toy Vault",
+  "chain": "local-harness",
+  "contracts": [
+    {
+      "name": "ToyVault",
+      "tags": ["vault", "pool"]
+    }
+  ],
+  "assets": [
+    {
+      "symbol": "USDC",
+      "decimals": 6
+    }
+  ],
+  "roles": [
+    {
+      "id": "liquidityProvider",
+      "description": "Initial depositor providing the vault's underlying liquidity",
+      "initialBalances": {
+        "USDC": "60000"
+      }
+    },
+    {
+      "id": "vaultUser",
+      "description": "User depositing into the vault and attempting redemptions",
+      "initialBalances": {
+        "USDC": "15000"
+      }
+    }
+  ],
+  "actions": [
+    {
+      "id": "seed-vault-liquidity",
+      "label": "Seed vault liquidity",
+      "actorRole": "liquidityProvider",
+      "contract": "ToyVault",
+      "method": "deposit",
+      "argsSchema": {
+        "asset": "string",
+        "amount": "number"
+      },
+      "effectsHint": ["increase vault underlying reserves"],
+      "config": {
+        "depositKind": "liquidity",
+        "asset": "USDC"
+      }
+    },
+    {
+      "id": "user-deposit-usdc",
+      "label": "User deposits USDC",
+      "actorRole": "vaultUser",
+      "contract": "ToyVault",
+      "method": "deposit",
+      "argsSchema": {
+        "asset": "string",
+        "amount": "number"
+      },
+      "effectsHint": ["increase user vault position"],
+      "config": {
+        "depositKind": "position",
+        "asset": "USDC"
+      }
+    },
+    {
+      "id": "user-redeem-safe",
+      "label": "User redeems safe amount",
+      "actorRole": "vaultUser",
+      "contract": "ToyVault",
+      "method": "withdraw",
+      "argsSchema": {
+        "asset": "string",
+        "amount": "number"
+      },
+      "effectsHint": ["withdraw user-backed underlying"],
+      "config": {
+        "withdrawKind": "position",
+        "asset": "USDC"
+      }
+    },
+    {
+      "id": "user-withdraw-excess",
+      "label": "User withdraws excess USDC",
+      "actorRole": "vaultUser",
+      "contract": "ToyVault",
+      "method": "withdraw",
+      "argsSchema": {
+        "asset": "string",
+        "amount": "number"
+      },
+      "effectsHint": ["attempt to drain more underlying than deposited"],
+      "config": {
+        "withdrawKind": "drain",
+        "asset": "USDC"
+      }
+    }
+  ],
+  "invariants": [
+    {
+      "id": "vault-conservation",
+      "kind": "conservation",
+      "description": "Vault USDC reserves should not become negative or permit impossible withdrawals",
+      "severity": "critical",
+      "config": {
+        "asset": "USDC"
+      }
+    }
+  ],
+  "metadata": {
+    "initialReserves": {
+      "USDC": 15000
+    },
+    "initialPrices": {
+      "USDC": 1
+    },
+    "profitAlertThreshold": 2000,
+    "protocolLossAlertThreshold": 2000
+  }
+}

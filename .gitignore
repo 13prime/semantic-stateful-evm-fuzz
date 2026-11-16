@@ -1,0 +1,10 @@
+node_modules/
+dist/
+artifacts/*
+!artifacts/.gitkeep
+contracts/out/
+cache/
+coverage/
+.env
+.DS_Store
+wait.md

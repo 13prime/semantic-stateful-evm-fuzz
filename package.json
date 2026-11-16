@@ -1,0 +1,29 @@
+{
+  "name": "semantic-stateful-evm-fuzz",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.base.json",
+    "typecheck": "tsc -p tsconfig.base.json --noEmit",
+    "run": "tsx apps/cli/src/main.ts",
+    "fuzz:run": "tsx apps/cli/src/main.ts run",
+    "foundry:build": "forge build",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.63.0",
+    "@solidity-parser/parser": "^0.20.2",
+    "zod": "^3.24.1"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.1",
+    "tsx": "^4.20.3",
+    "typescript": "^5.8.3",
+    "vitest": "^3.2.4"
+  }
+}

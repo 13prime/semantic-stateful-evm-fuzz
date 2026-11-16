@@ -1,0 +1,149 @@
+{
+  "id": "toy-lending",
+  "name": "Toy Lending Market",
+  "chain": "local-harness",
+  "contracts": [
+    {
+      "name": "ToyLendingPool",
+      "tags": ["lending", "pool"]
+    },
+    {
+      "name": "MockOracle",
+      "tags": ["oracle"]
+    }
+  ],
+  "assets": [
+    {
+      "symbol": "ETH",
+      "decimals": 18,
+      "priceSource": "MockOracle"
+    },
+    {
+      "symbol": "USDC",
+      "decimals": 6,
+      "priceSource": "MockOracle"
+    }
+  ],
+  "roles": [
+    {
+      "id": "attacker",
+      "description": "Economic adversary probing for profitable state transitions",
+      "initialBalances": {
+        "ETH": "200",
+        "USDC": "1000"
+      }
+    },
+    {
+      "id": "liquidityProvider",
+      "description": "Honest actor seeding pool liquidity",
+      "initialBalances": {
+        "ETH": "50",
+        "USDC": "50000"
+      }
+    },
+    {
+      "id": "oracleAdmin",
+      "description": "Privileged role able to modify prices in the toy harness",
+      "initialBalances": {
+        "ETH": "0",
+        "USDC": "0"
+      }
+    }
+  ],
+  "actions": [
+    {
+      "id": "seed-usdc-liquidity",
+      "label": "Seed USDC liquidity",
+      "actorRole": "liquidityProvider",
+      "contract": "ToyLendingPool",
+      "method": "deposit",
+      "argsSchema": {
+        "asset": "string",
+        "amount": "number"
+      },
+      "effectsHint": ["increase pool USDC reserves"],
+      "config": {
+        "depositKind": "liquidity"
+      }
+    },
+    {
+      "id": "deposit-eth-collateral",
+      "label": "Deposit ETH collateral",
+      "actorRole": "attacker",
+      "contract": "ToyLendingPool",
+      "method": "deposit",
+      "argsSchema": {
+        "asset": "string",
+        "amount": "number"
+      },
+      "effectsHint": ["increase attacker collateral"]
+    },
+    {
+      "id": "borrow-usdc",
+      "label": "Borrow USDC",
+      "actorRole": "attacker",
+      "contract": "ToyLendingPool",
+      "method": "borrow",
+      "argsSchema": {
+        "asset": "string",
+        "amount": "number"
+      },
+      "effectsHint": ["increase attacker debt", "decrease pool USDC reserves"]
+    },
+    {
+      "id": "slash-eth-price",
+      "label": "Slash ETH oracle price",
+      "actorRole": "oracleAdmin",
+      "contract": "MockOracle",
+      "method": "setPrice",
+      "argsSchema": {
+        "asset": "string",
+        "price": "number"
+      },
+      "effectsHint": ["reduce collateral value"]
+    },
+    {
+      "id": "withdraw-usdc",
+      "label": "Withdraw USDC reserves",
+      "actorRole": "attacker",
+      "contract": "ToyLendingPool",
+      "method": "withdraw",
+      "argsSchema": {
+        "asset": "string",
+        "amount": "number"
+      },
+      "effectsHint": ["drain pool liquidity into attacker balance"]
+    }
+  ],
+  "invariants": [
+    {
+      "id": "protocol-solvency",
+      "kind": "solvency",
+      "description": "Total debt should remain supportable by priced collateral",
+      "severity": "critical",
+      "config": {}
+    },
+    {
+      "id": "usdc-conservation",
+      "kind": "conservation",
+      "description": "USDC reserves should never become negative",
+      "severity": "high",
+      "config": {
+        "asset": "USDC"
+      }
+    }
+  ],
+  "metadata": {
+    "initialReserves": {
+      "ETH": 0,
+      "USDC": 20000
+    },
+    "initialPrices": {
+      "ETH": 2000,
+      "USDC": 1
+    },
+    "collateralFactor": 0.8,
+    "profitAlertThreshold": 5000,
+    "protocolLossAlertThreshold": 5000
+  }
+}

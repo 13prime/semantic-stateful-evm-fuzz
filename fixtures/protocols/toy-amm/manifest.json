@@ -1,0 +1,152 @@
+{
+  "id": "toy-amm",
+  "name": "Toy AMM",
+  "chain": "local-harness",
+  "contracts": [
+    {
+      "name": "ToyAmmPool",
+      "tags": ["amm", "pool"]
+    }
+  ],
+  "assets": [
+    {
+      "symbol": "USDC",
+      "decimals": 6
+    },
+    {
+      "symbol": "ETH",
+      "decimals": 18
+    }
+  ],
+  "roles": [
+    {
+      "id": "liquidityProvider",
+      "description": "Initial LP seeding both sides of the pool",
+      "initialBalances": {
+        "USDC": "50000",
+        "ETH": "100"
+      }
+    },
+    {
+      "id": "trader",
+      "description": "Trader interacting with swap paths",
+      "initialBalances": {
+        "USDC": "10000",
+        "ETH": "20"
+      }
+    },
+    {
+      "id": "oracleAdmin",
+      "description": "Privileged role updating reference prices for testing",
+      "initialBalances": {
+        "USDC": "0",
+        "ETH": "0"
+      }
+    }
+  ],
+  "actions": [
+    {
+      "id": "seed-usdc-liquidity",
+      "label": "Seed USDC side",
+      "actorRole": "liquidityProvider",
+      "contract": "ToyAmmPool",
+      "method": "deposit",
+      "argsSchema": {
+        "asset": "string",
+        "amount": "number"
+      },
+      "effectsHint": ["increase USDC reserves"],
+      "config": {
+        "depositKind": "liquidity",
+        "asset": "USDC"
+      }
+    },
+    {
+      "id": "seed-eth-liquidity",
+      "label": "Seed ETH side",
+      "actorRole": "liquidityProvider",
+      "contract": "ToyAmmPool",
+      "method": "deposit",
+      "argsSchema": {
+        "asset": "string",
+        "amount": "number"
+      },
+      "effectsHint": ["increase ETH reserves"],
+      "config": {
+        "depositKind": "liquidity",
+        "asset": "ETH"
+      }
+    },
+    {
+      "id": "swap-usdc-for-eth",
+      "label": "Swap USDC for ETH",
+      "actorRole": "trader",
+      "contract": "ToyAmmPool",
+      "method": "swap",
+      "argsSchema": {
+        "assetIn": "string",
+        "assetOut": "string",
+        "amount": "number"
+      },
+      "effectsHint": ["shift pool reserves", "output ETH to trader"],
+      "config": {
+        "asset": "USDC"
+      }
+    },
+    {
+      "id": "swap-eth-for-usdc",
+      "label": "Swap ETH for USDC",
+      "actorRole": "trader",
+      "contract": "ToyAmmPool",
+      "method": "swap",
+      "argsSchema": {
+        "assetIn": "string",
+        "assetOut": "string",
+        "amount": "number"
+      },
+      "effectsHint": ["shift pool reserves", "output USDC to trader"],
+      "config": {
+        "asset": "ETH"
+      }
+    },
+    {
+      "id": "set-eth-price",
+      "label": "Set ETH reference price",
+      "actorRole": "oracleAdmin",
+      "contract": "ToyAmmPool",
+      "method": "setPrice",
+      "argsSchema": {
+        "asset": "string",
+        "price": "number"
+      },
+      "effectsHint": ["change ETH reference value"],
+      "config": {
+        "asset": "ETH",
+        "privileged": true
+      }
+    }
+  ],
+  "invariants": [
+    {
+      "id": "amm-conservation",
+      "kind": "conservation",
+      "description": "AMM reserves should not become negative after swaps",
+      "severity": "critical",
+      "config": {
+        "asset": "USDC"
+      }
+    }
+  ],
+  "metadata": {
+    "initialReserves": {
+      "USDC": 15000,
+      "ETH": 30
+    },
+    "initialPrices": {
+      "USDC": 1,
+      "ETH": 2000
+    },
+    "profitAlertThreshold": 2000,
+    "protocolLossAlertThreshold": 2000
+  }
+}

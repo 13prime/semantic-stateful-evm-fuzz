@@ -1,0 +1,20 @@
+{
+  "id": "toy-suite",
+  "cases": [
+    {
+      "id": "toy-lending",
+      "manifestPath": "/Users/aurora/projects/work/fuzz/fixtures/protocols/toy-lending/manifest.json",
+      "description": "Toy lending protocol with oracle and reserve-drain probes"
+    },
+    {
+      "id": "toy-vault",
+      "manifestPath": "/Users/aurora/projects/work/fuzz/fixtures/protocols/toy-vault/manifest.json",
+      "description": "Toy vault protocol with safe redeem and excess withdrawal probes"
+    },
+    {
+      "id": "toy-amm",
+      "manifestPath": "/Users/aurora/projects/work/fuzz/fixtures/protocols/toy-amm/manifest.json",
+      "description": "Toy AMM protocol with swap and reserve-shift probes"
+    }
+  ]
+}
